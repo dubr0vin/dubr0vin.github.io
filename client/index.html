@@ -3,19 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Chat</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/css/uikit.min.css"/>
 </head>
 <body>
-<template id="chat-comp" shadow props="">
-    <button :title="x">{{x * g}}</button>
+<template id="chat-app">
+    <chat-start if="state==='start'"></chat-start>
+    <chat-spinner if="state==='loading'"></chat-spinner>
+    <chat-dialog if="state==='chatting'"></chat-dialog>
 </template>
-<template id="chat-app" shadow props="z">
-    <chat-comp x="1"></chat-comp>
-    <chat-comp x="2"></chat-comp>
-    {{z}}
+<template id="chat-start">
+    <div class="uk-position-center uk-card uk-card-default uk-card-body">
+        <h3 class="uk-card-title">Chat</h3>
+        <p>Ваш id: <span class="uk-text-danger">{{ myId }}</span></p>
+        <div class="uk-margin">
+            <input class="uk-input" type="text" placeholder="Кому звонить?" model="destId">
+        </div>
+        <button class="uk-button uk-button-default" onclick="do_call()">Звонить</button>
+    </div>
 </template>
+<template id="chat-spinner">
+    <div uk-spinner="ratio: 3" class="uk-position-center"></div>
+
+</template>
+<template id="chat-dialog">
+    <div class="uk-position-center">
+        <video uk-video="autoplay: inview"
+               id="main-video"></video>
+    </div>
+    <div class="uk-card uk-card-hover uk-position-bottom-right uk-margin-small-right uk-margin-small-bottom">
+        <video id="my-video" uk-video="autoplay: inview"></video>
+    </div>
+    <div class="uk-button-group uk-position-bottom-center uk-margin-large-bottom uk-box-shadow-medium">
+        <button class="uk-button uk-button-primary" onclick="muteMicro()" id="micro-button"><span
+                uk-icon="microphone"></span></button>
+        <button class="uk-button uk-button-primary" onclick="muteCamera()" id="camera-button"><span
+                uk-icon="video-camera"></span></button>
+        <button class="uk-button uk-button-danger" onclick="closeCall()"><span uk-icon="sign-in"></span></button>
+    </div>
+</template>
+
+<script src="https://unpkg.com/peerjs@1.4.5/dist/peerjs.min.js"></script>
 <script src="src/ui.js"></script>
 <script src="src/index.js"></script>
-<chat-app id="app" z="1"></chat-app>
+<script src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit-icons.min.js"></script>
+
+<chat-app id="app"></chat-app>
 </body>
 </html>
 

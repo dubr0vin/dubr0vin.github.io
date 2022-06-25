@@ -31,7 +31,9 @@
         for (let i = 0; i < node.childNodes.length; i++) {
             let child = node.childNodes[i];
             allSiblings(child, callback);
-            callback(child);
+            if (callback(child)) {
+                node.removeChild(child)
+            }
         }
     }
 
@@ -58,6 +60,7 @@
                 }
 
                 allSiblings(nw, (node) => {
+                    let shouldDelete = false;
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         for (let name of node.getAttributeNames()) {
                             if (name.startsWith(":")) {
@@ -67,11 +70,22 @@
                                     node.onupdated()
                                 }
                             }
+                            if (name === "if") {
+                                if (!eval(node.getAttribute(name))) {
+                                    shouldDelete = true;
+                                }
+                            }
+                            if (name === "model") {
+                                node.onchange = function () {
+                                    eval(node.getAttribute(name) + "=node.value")
+                                }
+                            }
                         }
                     }
                     if (node.nodeType === Node.TEXT_NODE) {
                         processText(node)
                     }
+                    return shouldDelete
                 })
 
                 for (let name in globals) {
@@ -102,7 +116,7 @@
             }
 
             static get observedAttributes() {
-                return el.getAttribute("props").split(";").map(t => t.trim());
+                return (el.getAttribute("props") || "").split(";").map(t => t.trim());
             }
 
             attributeChangedCallback(name, oldValue, newValue) {
