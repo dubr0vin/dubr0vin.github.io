@@ -5,7 +5,17 @@
     <title>Chat</title>
 </head>
 <body>
-<h1>Hey</h1>
-<script type="module" src="src/index.mjs"></script>
+<template id="chat-comp" shadow props="">
+    <button :title="x">{{x * g}}</button>
+</template>
+<template id="chat-app" shadow props="z">
+    <chat-comp x="1"></chat-comp>
+    <chat-comp x="2"></chat-comp>
+    {{z}}
+</template>
+<script src="src/ui.js"></script>
+<script src="src/index.js"></script>
+<chat-app id="app" z="1"></chat-app>
 </body>
 </html>
+
