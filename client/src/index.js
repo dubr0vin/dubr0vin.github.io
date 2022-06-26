@@ -5,6 +5,11 @@ function updateUI() {
 let state = "loading"
 let myId = ''
 let destId = ''
+let whoId = ''
+
+let acceptCall = null;
+let dismissCall = null;
+let closeBothCalls = null
 
 let peer = new Peer({
     config: {
@@ -40,8 +45,32 @@ peer.on('error', function (err) {
     console.log(err)
 })
 
+peer.on('call', async function (c) {
+    state = "loading"
+    updateUI()
+    call = c;
+    call.answer(await getStream());
+    setupCall();
+});
+peer.on('connection', function (c) {
+    setupConnection(c)
+
+    /*conn.on('close', function () {
+        for (let conns in peer.connections) {
+            peer.connections[conns].forEach((conn, index, array) => {
+                console.log(`closing ${conn.connectionId} peerConnection (${index + 1}/${array.length})`, conn.peerConnection);
+                conn.peerConnection.close();
+
+                // close it using peerjs methods
+                if (conn.close)
+                    conn.close();
+            });
+        }
+        callClosed()
+    })*/
+})
+
 let call = null;
-let conn = null;
 
 let localStream
 
@@ -70,42 +99,20 @@ function setupCall() {
     });
     call.on('close', function () {
         console.log('close')
-        callClosed()
     });
 }
 
-async function do_call() {
-    state = "loading"
-    updateUI()
-    call = peer.call(destId, await getStream());
-    conn = peer.connect(destId)
+async function realCall(conn) {
+    call = peer.call(conn.peer, await getStream());
+    closeBothCalls = () => {
+        closeCall()
+        conn.send({
+            type: "close-call"
+        })
+    }
     setupCall()
 }
 
-peer.on('call', async function (c) {
-    state = "loading"
-    updateUI()
-    call = c;
-    call.answer(await getStream());
-    setupCall();
-});
-peer.on('connection', function (c) {
-    conn = c;
-
-    conn.on('close', function () {
-        for (let conns in peer.connections) {
-            peer.connections[conns].forEach((conn, index, array) => {
-                console.log(`closing ${conn.connectionId} peerConnection (${index + 1}/${array.length})`, conn.peerConnection);
-                conn.peerConnection.close();
-
-                // close it using peerjs methods
-                if (conn.close)
-                    conn.close();
-            });
-        }
-        callClosed()
-    })
-})
 
 function updateButtons() {
     {
@@ -136,13 +143,9 @@ function muteMicro() {
     updateButtons();
 }
 
+
 function closeCall() {
     call.close();
-    conn.close()
-    callClosed()
-}
-
-function callClosed() {
     state = "start"
     if (localStream != null) {
         const tracks = localStream.getTracks();
@@ -152,4 +155,12 @@ function callClosed() {
         localStream = null
     }
     updateUI()
+}
+
+function doCall() {
+    state = "calling"
+    updateUI()
+
+    let c = peer.connect(destId)
+    setupConnection(c, true)
 }

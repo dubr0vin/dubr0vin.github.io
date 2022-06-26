@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <title>Chat</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/css/uikit.min.css"/>
-    <link rel="icon" href="favicon.svg" />
+    <link rel="icon" href="favicon.svg"/>
 </head>
 <body>
 <template id="chat-app">
     <chat-start if="state==='start'"></chat-start>
     <chat-spinner if="state==='loading'"></chat-spinner>
     <chat-dialog if="state==='chatting'"></chat-dialog>
+    <chat-calling-to-me if="state==='calling-to-me'"></chat-calling-to-me>
+    <chat-calling if="state==='calling'"></chat-calling>
 </template>
 <template id="chat-start">
     <div class="uk-position-center uk-card uk-card-default uk-card-body">
@@ -19,7 +21,7 @@
         <div class="uk-margin">
             <input class="uk-input" type="text" placeholder="Кому звонить?" model="destId">
         </div>
-        <button class="uk-button uk-button-default" onclick="do_call()">Звонить</button>
+        <button class="uk-button uk-button-default" onclick="doCall()">Звонить</button>
     </div>
 </template>
 <template id="chat-spinner">
@@ -39,12 +41,28 @@
                 uk-icon="microphone"></span></button>
         <button class="uk-button uk-button-primary" onclick="muteCamera()" id="camera-button"><span
                 uk-icon="video-camera"></span></button>
-        <button class="uk-button uk-button-danger" onclick="closeCall()"><span uk-icon="sign-in"></span></button>
+        <button class="uk-button uk-button-danger" onclick="closeBothCalls()"><span uk-icon="sign-in"></span></button>
+    </div>
+</template>
+<template id="chat-calling-to-me">
+    <div class="uk-position-center uk-card uk-card-default uk-card-body">
+        <h3 class="uk-card-title">Звонит</h3>
+        <p>{{ whoId }}</p>
+        <button class="uk-button uk-button-primary" onclick="acceptCall()">Прниять</button>
+        <button class="uk-button uk-button-danger" onclick="dismissCall()">Сбросить</button>
+    </div>
+</template>
+<template id="chat-calling">
+    <div class="uk-position-center uk-card uk-card-default uk-card-body">
+        <h3 class="uk-card-title">Звоним</h3>
+        <p>{{ destId }}</p>
+        <button class="uk-button uk-button-danger" onclick="dismissCall()">Сбросить</button>
     </div>
 </template>
 
 <script src="https://unpkg.com/peerjs@1.4.5/dist/peerjs.min.js"></script>
 <script src="src/ui.js"></script>
+<script src="src/lib.js"></script>
 <script src="src/index.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/uikit@3.14.3/dist/js/uikit-icons.min.js"></script>
