@@ -7,35 +7,7 @@ let myId = ''
 let destId = ''
 let whoId = ''
 
-let acceptCall = null;
-let dismissCall = null;
-let closeBothCalls = null
 
-let peer = new Peer({
-    config: {
-        iceServers: [
-            {
-                urls: "stun:openrelay.metered.ca:80",
-            },
-            {
-                urls: "turn:openrelay.metered.ca:80",
-                username: "openrelayproject",
-                credential: "openrelayproject",
-            },
-            {
-                urls: "turn:openrelay.metered.ca:443",
-                username: "openrelayproject",
-                credential: "openrelayproject",
-            },
-            {
-                urls: "turn:openrelay.metered.ca:443?transport=tcp",
-                username: "openrelayproject",
-                credential: "openrelayproject",
-            },
-        ],
-        debug: 3
-    }
-});
 peer.on('open', function (id) {
     myId = id
     state = "start"
@@ -45,30 +17,6 @@ peer.on('error', function (err) {
     console.log(err)
 })
 
-peer.on('call', async function (c) {
-    state = "loading"
-    updateUI()
-    call = c;
-    call.answer(await getStream());
-    setupCall();
-});
-peer.on('connection', function (c) {
-    setupConnection(c)
-
-    /*conn.on('close', function () {
-        for (let conns in peer.connections) {
-            peer.connections[conns].forEach((conn, index, array) => {
-                console.log(`closing ${conn.connectionId} peerConnection (${index + 1}/${array.length})`, conn.peerConnection);
-                conn.peerConnection.close();
-
-                // close it using peerjs methods
-                if (conn.close)
-                    conn.close();
-            });
-        }
-        callClosed()
-    })*/
-})
 
 let call = null;
 
@@ -97,20 +45,6 @@ function setupCall() {
         console.log(localStream.getVideoTracks()[0].getSettings().width, mv.width)
         mv.srcObject = localStream
     });
-    call.on('close', function () {
-        console.log('close')
-    });
-}
-
-async function realCall(conn) {
-    call = peer.call(conn.peer, await getStream());
-    closeBothCalls = () => {
-        closeCall()
-        conn.send({
-            type: "close-call"
-        })
-    }
-    setupCall()
 }
 
 
@@ -144,6 +78,59 @@ function muteMicro() {
 }
 
 
+function doCall() {
+    state = "calling"
+    updateUI()
+
+    /*let c = peer.connect(destId)
+    setupConnection(c, true)*/
+    send(destId, "call")
+    whoId = destId
+}
+
+ondata("call", (from) => {
+    whoId = from
+    state = "calling-to-me"
+    updateUI()
+})
+
+function dismissCall() {
+    state = "start"
+    updateUI()
+    send(whoId, "dismiss-call")
+}
+
+ondata("dismiss-call", (from) => {
+    state = "start"
+    updateUI()
+})
+
+function acceptCall() {
+    state = "loading"
+    updateUI()
+    send(whoId, "accept-call")
+}
+
+ondata("accept-call", async (from) => {
+    call = peer.call(from, await getStream());
+    setupCall()
+})
+
+peer.on('call', async function (c) {
+    call = c;
+    call.answer(await getStream());
+    setupCall();
+});
+
+function closeBothCalls() {
+    send(whoId, "close-call");
+    closeCall()
+}
+
+ondata("close-call", () => {
+    closeCall()
+})
+
 function closeCall() {
     call.close();
     state = "start"
@@ -155,12 +142,4 @@ function closeCall() {
         localStream = null
     }
     updateUI()
-}
-
-function doCall() {
-    state = "calling"
-    updateUI()
-
-    let c = peer.connect(destId)
-    setupConnection(c, true)
 }
