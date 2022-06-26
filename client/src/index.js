@@ -22,8 +22,20 @@ let call = null;
 
 let localStream
 
+let settings = {
+    video: {
+        deviceId: "default",
+        width: {min: 640},
+        height: {min: 480}
+    },
+    audio: {
+        deviceId: "default",
+        echoCancellation: true
+    }
+}
+
 async function getStream() {
-    let stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
+    let stream = await navigator.mediaDevices.getUserMedia(settings)
 
     localStream = stream;
     return stream
@@ -141,5 +153,35 @@ function closeCall() {
         });
         localStream = null
     }
+    updateUI()
+}
+
+async function openSettings() {
+    let videoDeviceId = settings.video.deviceId
+    let audioDeviceId = settings.audio.deviceId
+    state = "settings"
+    updateUI()
+    let devices = await navigator.mediaDevices.enumerateDevices();
+    for (let device of devices) {
+        //console.log(device)
+        if (device.kind === "videoinput") {
+            let section = document.createElement("option")
+            section.setAttribute("value", device.deviceId);
+            section.innerText = device.label + (device.deviceId === "default" ? " (Default)" : "")
+            document.getElementById("video-devices").appendChild(section)
+        }
+        if (device.kind === "audioinput") {
+            let section = document.createElement("option")
+            section.setAttribute("value", device.deviceId);
+            section.innerText = device.label + (device.deviceId === "default" ? " (Default)" : "")
+            document.getElementById("audio-devices").appendChild(section)
+        }
+    }
+    document.getElementById("video-devices").value = videoDeviceId
+    document.getElementById("audio-devices").value = audioDeviceId
+}
+
+function closeSettings() {
+    state = "start"
     updateUI()
 }

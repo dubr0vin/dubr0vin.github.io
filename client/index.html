@@ -13,6 +13,7 @@
     <chat-dialog if="state==='chatting'"></chat-dialog>
     <chat-calling-to-me if="state==='calling-to-me'"></chat-calling-to-me>
     <chat-calling if="state==='calling'"></chat-calling>
+    <chat-settings if="state==='settings'"></chat-settings>
 </template>
 <template id="chat-start">
     <div class="uk-position-center uk-card uk-card-default uk-card-body">
@@ -22,6 +23,7 @@
             <input class="uk-input" type="text" placeholder="Кому звонить?" model="destId">
         </div>
         <button class="uk-button uk-button-default" onclick="doCall()">Звонить</button>
+        <button class="uk-button uk-button-default" onclick="openSettings()">Настройки</button>
     </div>
 </template>
 <template id="chat-spinner">
@@ -59,7 +61,22 @@
         <button class="uk-button uk-button-danger" onclick="dismissCall()">Сбросить</button>
     </div>
 </template>
-
+<template id="chat-settings">
+    <div class="uk-position-center uk-card uk-card-default uk-card-body">
+        <h3 class="uk-card-title">Настройки</h3>
+        <h5>Видео</h5>
+        <div class="uk-margin">
+            <select class="uk-select" model="settings.video.deviceId" id="video-devices">
+            </select>
+        </div>
+        <h5>Аудио</h5>
+        <div class="uk-margin">
+            <select class="uk-select" model="settings.audio.deviceId" id="audio-devices">
+            </select>
+        </div>
+        <button class="uk-button uk-button-default" onclick="closeSettings()">Назад</button>
+    </div>
+</template>
 <script src="https://unpkg.com/peerjs@1.4.5/dist/peerjs.min.js"></script>
 <script src="src/ui.js"></script>
 <script src="src/lib.js"></script>

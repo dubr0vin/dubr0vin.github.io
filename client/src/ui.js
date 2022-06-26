@@ -77,7 +77,8 @@
                             }
                             if (name === "model") {
                                 node.onchange = function () {
-                                    eval(node.getAttribute(name) + "=node.value")
+                                    console.log(node.getAttribute(name) + "=" + JSON.stringify(node.value))
+                                    eval(node.getAttribute(name) + "=" + JSON.stringify(node.value))
                                 }
                             }
                         }
